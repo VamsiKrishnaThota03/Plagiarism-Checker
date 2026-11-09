@@ -1,97 +1,97 @@
-from django.shortcuts import render
-from django.http import HttpResponse
-from plagiarismchecker.algorithm import main
-from docx import *
-from plagiarismchecker.algorithm import fileSimilarity
-import PyPDF2 
+from django.shortcuts import redirect, render
+from django.views.decorators.http import require_http_methods
 
-# Create your views here.
-#home
+from plagiarismchecker.algorithm import fileSimilarity, main, webSearch
+
+from .forms import CompareFileForm, CompareTextForm, WebFileForm, WebTextForm
+
+
+def _web_page(request, text_form=None, file_form=None, active='text', **extra):
+    context = {
+        'text_form': text_form or WebTextForm(),
+        'file_form': file_form or WebFileForm(),
+        'active_tab': active,
+        'search_configured': webSearch.is_configured(),
+        **extra,
+    }
+    return render(request, 'pc/index.html', context)
+
+
+def _compare_page(request, text_form=None, file_form=None, active='text', **extra):
+    context = {
+        'text_form': text_form or CompareTextForm(),
+        'file_form': file_form or CompareFileForm(),
+        'active_tab': active,
+        **extra,
+    }
+    return render(request, 'pc/doc_compare.html', context)
+
+
+def _web_check(text):
+    """Run the web check and return template context with results or an error."""
+    try:
+        percent, links = main.findSimilarity(text)
+    except webSearch.SearchNotConfigured:
+        return {'error': 'Web search is not configured on this server '
+                         '(GOOGLE_API_KEY and GOOGLE_CSE_ID are missing).'}
+    sources = sorted(((link, round(p, 1)) for link, p in links.items()),
+                     key=lambda item: item[1], reverse=True)
+    return {'percent': round(percent, 2), 'sources': sources, 'checked': True}
+
+
 def home(request):
-    return render(request, 'pc/index.html') 
+    return _web_page(request)
 
-#web search(Text)
+
+@require_http_methods(['GET', 'POST'])
 def test(request):
-    print("request is welcome test")
-    print(request.POST['q'])  
-    
-    if request.POST['q']: 
-        percent,link = main.findSimilarity(request.POST['q'])
-        percent = round(percent,2)
-    print("Output.....................!!!!!!!!",percent,link)
-    return render(request, 'pc/index.html',{'link': link, 'percent': percent})
+    """Web check for pasted text (form field ``q``)."""
+    if request.method == 'GET':
+        return redirect('plagiarism-check-mainpage')
+    form = WebTextForm(request.POST)
+    if not form.is_valid():
+        return _web_page(request, text_form=form)
+    return _web_page(request, text_form=form, **_web_check(form.cleaned_data['q']))
 
-#web search file(.txt, .docx)
+
+@require_http_methods(['GET', 'POST'])
 def filetest(request):
-    value = ''    
-    print(request.FILES['docfile'])
-    if str(request.FILES['docfile']).endswith(".txt"):
-        value = str(request.FILES['docfile'].read())
-
-    elif str(request.FILES['docfile']).endswith(".docx"):
-        document = Document(request.FILES['docfile'])
-        for para in document.paragraphs:
-            value += para.text
-
-    elif str(request.FILES['docfile']).endswith(".pdf"):
-        # creating a pdf file object 
-        pdfFileObj = open(request.FILES['docfile'], 'rb') 
-
-        # creating a pdf reader object 
-        pdfReader = PyPDF2.PdfFileReader(pdfFileObj) 
-
-        # printing number of pages in pdf file 
-        print(pdfReader.numPages) 
-
-        # creating a page object 
-        pageObj = pdfReader.getPage(0) 
-
-        # extracting text from page 
-        print(pageObj.extractText()) 
-
-        # closing the pdf file object 
-        pdfFileObj.close() 
+    """Web check for an uploaded .txt/.docx/.pdf (form field ``docfile``)."""
+    if request.method == 'GET':
+        return redirect('plagiarism-check-mainpage')
+    form = WebFileForm(request.POST, request.FILES)
+    if not form.is_valid():
+        return _web_page(request, file_form=form, active='file')
+    return _web_page(request, file_form=WebFileForm(), active='file',
+                     filename=request.FILES['docfile'].name,
+                     **_web_check(form.cleaned_data['docfile_text']))
 
 
-    percent,link = main.findSimilarity(value)
-    print("Output...................!!!!!!!!",percent,link)
-    return render(request, 'pc/index.html',{'link': link, 'percent': percent})
-
-#text compare
 def fileCompare(request):
-    return render(request, 'pc/doc_compare.html') 
+    return _compare_page(request)
 
-#two text compare(Text)
+
+@require_http_methods(['GET', 'POST'])
 def twofiletest1(request):
-    print("Submiited text for 1st and 2nd")
-    print(request.POST['q1'])
-    print(request.POST['q2'])
+    """Compare two pasted texts (``q1``, ``q2``)."""
+    if request.method == 'GET':
+        return redirect('compare')
+    form = CompareTextForm(request.POST)
+    if not form.is_valid():
+        return _compare_page(request, text_form=form)
+    result = fileSimilarity.findFileSimilarity(form.cleaned_data['q1'], form.cleaned_data['q2'])
+    return _compare_page(request, text_form=form, result=round(result, 2))
 
-    if request.POST['q1'] != '' and request.POST['q2'] != '': 
-        print("Got both the texts")
-        result = fileSimilarity.findFileSimilarity(request.POST['q1'],request.POST['q2'])
-    result = round(result,2)    
-    print("Output>>>>>>>>>>>>>>>>>>>>!!!!!!!!",result)
-    return render(request, 'pc/doc_compare.html',{'result': result})
-    
 
-#two text compare(.txt, .docx)
+@require_http_methods(['GET', 'POST'])
 def twofilecompare1(request):
-    value1 = ''
-    value2 = ''
-    if (str(request.FILES['docfile1'])).endswith(".txt") and (str(request.FILES['docfile2'])).endswith(".txt"):
-        value1 = str(request.FILES['docfile1'].read())
-        value2 = str(request.FILES['docfile2'].read())
-
-    elif (str(request.FILES['docfile1'])).endswith(".docx") and (str(request.FILES['docfile2'])).endswith(".docx"):
-        document = Document(request.FILES['docfile1'])
-        for para in document.paragraphs:
-            value1 += para.text
-        document = Document(request.FILES['docfile2'])
-        for para in document.paragraphs:
-            value2 += para.text
-
-    result = fileSimilarity.findFileSimilarity(value1,value2)
-    
-    print("Output..................!!!!!!!!",result)
-    return render(request, 'pc/doc_compare.html',{'result': result})
+    """Compare two uploaded documents (``docfile1``, ``docfile2``); types may differ."""
+    if request.method == 'GET':
+        return redirect('compare')
+    form = CompareFileForm(request.POST, request.FILES)
+    if not form.is_valid():
+        return _compare_page(request, file_form=form, active='file')
+    result = fileSimilarity.findFileSimilarity(form.cleaned_data['docfile1_text'],
+                                               form.cleaned_data['docfile2_text'])
+    return _compare_page(request, active='file', result=round(result, 2),
+                         filenames=(request.FILES['docfile1'].name, request.FILES['docfile2'].name))
