@@ -1,0 +1,6 @@
+<div class="gauge {% if value >= 50 %}high{% elif value >= 20 %}mid{% else %}low{% endif %}" style="--value: {{ value|floatformat:'0' }};" role="img" aria-label="{{ value }}% {{ label }}">
+  <div class="gauge-inner">
+    <div class="gauge-value">{{ value|floatformat:'-1' }}%</div>
+    <div class="gauge-label">{{ label }}</div>
+  </div>
+</div>

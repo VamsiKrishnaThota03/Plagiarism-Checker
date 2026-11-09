@@ -1,0 +1,65 @@
+:root {
+  --pc-bg: #f4f7f6;
+  --pc-border: #dfe7e5;
+  --pc-muted: #5f6f6c;
+  --pc-accent: #0f766e;
+  --pc-accent-dark: #115e59;
+  --bs-body-font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --bs-body-color: #1d2b29;
+  --bs-link-color: #0f766e;
+  --bs-link-hover-color: #115e59;
+}
+
+body { background: var(--pc-bg); min-height: 100vh; display: flex; flex-direction: column; }
+main { flex: 1; }
+:focus-visible { outline: 3px solid rgba(15, 118, 110, .45); outline-offset: 2px; }
+
+.btn-primary { --bs-btn-bg: var(--pc-accent); --bs-btn-border-color: var(--pc-accent); --bs-btn-hover-bg: var(--pc-accent-dark); --bs-btn-hover-border-color: var(--pc-accent-dark); --bs-btn-active-bg: #134e4a; --bs-btn-active-border-color: #134e4a; --bs-btn-disabled-bg: var(--pc-accent); --bs-btn-disabled-border-color: var(--pc-accent); }
+.form-control:focus { border-color: #5eead4; box-shadow: 0 0 0 .2rem rgba(15, 118, 110, .18); }
+
+.app-navbar { background: #0b1f1d; }
+.app-navbar .navbar-brand { display: flex; align-items: center; gap: .55rem; font-weight: 700; letter-spacing: -.01em; }
+.app-navbar .nav-link { color: #b7d3cf; border-radius: .5rem; padding: .45rem .85rem !important; }
+.app-navbar .nav-link:hover, .app-navbar .nav-link:focus { color: #fff; background: rgba(255,255,255,.08); }
+.app-navbar .nav-link.active { color: #fff; background: rgba(255,255,255,.15); }
+
+.page-intro { margin: 2.25rem 0 1.5rem; }
+.page-intro h1 { font-size: clamp(1.6rem, 3.5vw, 2.1rem); font-weight: 750; letter-spacing: -.02em; margin-bottom: .35rem; }
+.page-intro p { color: var(--pc-muted); max-width: 46rem; margin: 0; }
+
+.card { border: 1px solid var(--pc-border); border-radius: 1rem; box-shadow: 0 1px 2px rgba(16, 24, 40, .04), 0 8px 24px rgba(16, 24, 40, .05); }
+.card-header { background: #fff; border-bottom: 1px solid var(--pc-border); border-radius: 1rem 1rem 0 0 !important; }
+
+.nav-segment { gap: .25rem; background: #eef3f2; padding: .25rem; border-radius: .75rem; display: inline-flex; border: 0; }
+.nav-segment .nav-link { border: 0; border-radius: .6rem; color: var(--pc-muted); font-weight: 500; padding: .4rem 1rem; }
+.nav-segment .nav-link:hover { color: var(--pc-accent-dark); }
+.nav-segment .nav-link.active { background: #fff; color: var(--pc-accent-dark); box-shadow: 0 1px 3px rgba(16,24,40,.12); }
+
+textarea.form-control { resize: vertical; min-height: 12rem; line-height: 1.55; }
+.char-count { font-size: .8rem; color: var(--pc-muted); }
+
+.drop-zone { border: 2px dashed #b9cdc9; border-radius: .9rem; padding: 2rem 1rem; text-align: center; background: #fafcfc; transition: border-color .15s, background .15s; }
+.drop-zone:hover, .drop-zone:focus-within { border-color: var(--pc-accent); background: #f0fdfa; }
+.drop-zone .bi { font-size: 2rem; color: var(--pc-accent); }
+
+.gauge { --value: 0; --color: #16a34a; width: 9.5rem; height: 9.5rem; border-radius: 50%; display: grid; place-items: center; margin: 0 auto;
+  background: conic-gradient(var(--color) calc(var(--value) * 1%), #e6eeec 0); }
+.gauge-inner { width: 7.4rem; height: 7.4rem; border-radius: 50%; background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.gauge-value { font-size: 1.9rem; font-weight: 750; letter-spacing: -.03em; line-height: 1; }
+.gauge-label { font-size: .75rem; color: var(--pc-muted); text-transform: uppercase; letter-spacing: .06em; margin-top: .3rem; }
+.gauge.low { --color: #16a34a; } .gauge.mid { --color: #d97706; } .gauge.high { --color: #dc2626; }
+
+.source-list .list-group-item { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding: .75rem 1rem; }
+.source-list a { word-break: break-all; }
+
+.placeholder-state { text-align: center; color: var(--pc-muted); padding: 2rem 1rem; }
+.placeholder-state .bi { font-size: 2.25rem; color: #9fbdb8; display: block; margin-bottom: .5rem; }
+
+.site-footer { color: var(--pc-muted); font-size: .85rem; padding: 1.5rem 0; }
+
+@media (max-width: 575.98px) {
+  .page-intro { margin-top: 1.5rem; }
+  .gauge { width: 8rem; height: 8rem; }
+  .gauge-inner { width: 6.2rem; height: 6.2rem; }
+  .gauge-value { font-size: 1.6rem; }
+}

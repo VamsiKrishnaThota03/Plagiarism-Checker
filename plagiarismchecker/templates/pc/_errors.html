@@ -1,0 +1,6 @@
+{% if form.non_field_errors or form.errors %}
+<div class="alert alert-danger d-flex gap-2" role="alert">
+  <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+  <div>{% for field in form %}{% for error in field.errors %}<div>{{ error }}</div>{% endfor %}{% endfor %}{% for error in form.non_field_errors %}<div>{{ error }}</div>{% endfor %}</div>
+</div>
+{% endif %}

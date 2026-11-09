@@ -1,130 +1,93 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
+{% extends 'pc/base.html' %}
+{% block title %}Web check{% endblock %}
+{% block content %}
+<div class="page-intro">
+  <h1>Check text against the web</h1>
+  <p>Your text is split into short phrases, each phrase is searched with Google, and matching pages are scored with cosine similarity.</p>
+</div>
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Plagiarism Checker | Home</title>
+{% if not search_configured %}
+<div class="alert alert-warning d-flex gap-2" role="status">
+  <i class="bi bi-key" aria-hidden="true"></i>
+  <div>Web search isn't configured on this server. Set <code>GOOGLE_API_KEY</code> and <code>GOOGLE_CSE_ID</code> to enable it. <a href="{% url 'compare' %}" class="alert-link">Document comparison</a> works without them.</div>
+</div>
+{% endif %}
 
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css">
-  <!-- Google Fonts -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
-  <!-- Bootstrap core CSS -->
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Material Design Bootstrap -->
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.19.1/css/mdb.min.css" rel="stylesheet">
-  <link rel="preconnect" href="https://fonts.gstatic.com">
-  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@500;600&display=swap" rel="stylesheet">
-  <link rel="preconnect" href="https://fonts.gstatic.com">
-  <link href="https://fonts.googleapis.com/css2?family=Sansita+Swashed:wght@700&display=swap" rel="stylesheet">
-  <link href="{% static 'pc/styles.css' %}" rel="stylesheet" type="text/css">
-
-</head>
-
-<body>
-
-  <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: black;">
-    <a class="navbar-brand" href="{% url 'plagiarism-check-mainpage' %}">Plagiarism Checker</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
-      aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav" style="margin-left: 0;">
-        <li class="nav-item nav-one">
-          <a class="nav-link" href="{% url 'plagiarism-check-mainpage' %}">Home <span
-              class="sr-only">(current)</span></a>
-        </li>
-        <li class="nav-item nav-two">
-          <a class="nav-link" href="{% url 'compare' %}">Compare Documents</a>
-        </li>
-      </ul>
-    </div>
-  </nav>
-
-  <div class="container content-1">
-    <div class="col-md-6 offset-3 text-content">
-
-      <p>Choose a file or enter text for web search!</p>
-      <div class="tab-content-1" style="background-color: white">
-        <ul class="nav nav-tabs" id="myTab" role="tablist">
-          <li class="nav-item">
-            <a class="nav-link active" id="text-tab" data-toggle="tab" href="#text-input-ws" role="tab"
-              aria-controls="text-input-ws" aria-selected="true" onclick="makeInvisible()">Text</a>
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="card">
+      <div class="card-body p-4">
+        <ul class="nav nav-segment mb-4" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link{% if active_tab == 'text' %} active{% endif %}" id="text-tab" data-bs-toggle="tab" data-bs-target="#text-pane" type="button" role="tab" aria-controls="text-pane" aria-selected="{% if active_tab == 'text' %}true{% else %}false{% endif %}"><i class="bi bi-fonts me-1" aria-hidden="true"></i>Text</button>
           </li>
-          <li class="nav-item">
-            <a class="nav-link" id="file-tab" data-toggle="tab" href="#file-input-ws" role="tab"
-              aria-controls="file-input-ws" aria-selected="false" onclick="makeVisible()">File Upload</a>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link{% if active_tab == 'file' %} active{% endif %}" id="file-tab" data-bs-toggle="tab" data-bs-target="#file-pane" type="button" role="tab" aria-controls="file-pane" aria-selected="{% if active_tab == 'file' %}true{% else %}false{% endif %}"><i class="bi bi-file-earmark-text me-1" aria-hidden="true"></i>File upload</button>
           </li>
         </ul>
-        <div class="tab-content" id="myTabContent">
-          <div class="tab-pane fade show active" id="text-input-ws" role="tabpanel" aria-labelledby="text-tab">
-           
-            <form id="form1-ws" action="/test/" method="POST">
+
+        <div class="tab-content">
+          <div class="tab-pane fade{% if active_tab == 'text' %} show active{% endif %}" id="text-pane" role="tabpanel" aria-labelledby="text-tab" tabindex="0">
+            {% include 'pc/_errors.html' with form=text_form %}
+            <form action="{% url 'Test' %}" method="post" data-loading="Searching the web…">
               {% csrf_token %}
-              <textarea id="text-1" name="q" required></textarea>
-                </form>
-
+              <label for="id_q" class="form-label fw-medium">{{ text_form.q.label }}</label>
+              {{ text_form.q }}
+              <div class="d-flex justify-content-between align-items-center mt-3 gap-2 flex-wrap">
+                <span class="char-count" data-count-for="id_q"></span>
+                <button type="submit" class="btn btn-primary px-4"{% if not search_configured %} disabled{% endif %}><i class="bi bi-search me-1" aria-hidden="true"></i>Run search</button>
+              </div>
+            </form>
           </div>
-          
-          <div class="tab-pane fade" id="file-input-ws" role="tabpanel" aria-labelledby="file-tab">
-            <form id="form2-ws" action="/filetest/" enctype="multipart/form-data" method="POST">
-            {% csrf_token %}
-            <input id="id_docfile" required type="file" name="docfile" />
-              </form>
 
+          <div class="tab-pane fade{% if active_tab == 'file' %} show active{% endif %}" id="file-pane" role="tabpanel" aria-labelledby="file-tab" tabindex="0">
+            {% include 'pc/_errors.html' with form=file_form %}
+            <form action="{% url 'filetest' %}" method="post" enctype="multipart/form-data" data-loading="Searching the web…">
+              {% csrf_token %}
+              <div class="drop-zone">
+                <i class="bi bi-cloud-arrow-up" aria-hidden="true"></i>
+                <label for="{{ file_form.docfile.id_for_label }}" class="form-label d-block fw-medium mt-2">Choose a .txt, .docx or .pdf file</label>
+                {{ file_form.docfile }}
+              </div>
+              <div class="d-flex justify-content-end mt-3">
+                <button type="submit" class="btn btn-primary px-4"{% if not search_configured %} disabled{% endif %}><i class="bi bi-search me-1" aria-hidden="true"></i>Run search</button>
+              </div>
+            </form>
           </div>
         </div>
-      </div>
-      <div class="col-md-9">
-      <button type="submit" form="form1-ws" id="submit-button-1" class="btn" style="background-color: blue">Run Search</button>
-      <button type="submit" form="form2-ws" id="submit-button-2" class="btn submit-button-2">Run Search</button>  
-      </div>  
-    </div>
-
-    <div class="container-fluid result-div" style="background-color:white">
-      <div class="row">
-        <div class="col-md-6 result-1" style="background-color:yellow">
-          <h3>Results</h3>
-          <ul class="output-list-1">
-            {% for links in link %}            
-              <li>{{ links }}</li>
-            {% endfor %}
-      </div>
-
-      <div class="col-md-6 result-2" style="text-align: center; align-items: center;">
-        <p class="output-per-tot">{{ percent }}%</p>
-        <p>Plagiarized</p>
-      </div>
       </div>
     </div>
   </div>
 
-  <script>
-    function makeVisible() {
-      document.getElementById("submit-button-2").style.visibility = "visible";
-      document.getElementById("submit-button-1").style.visibility = "hidden";
-    }
-
-    function makeInvisible(){
-      document.getElementById("submit-button-2").style.visibility = "hidden";
-      document.getElementById("submit-button-1").style.visibility = "visible";
-    }
-  </script>
-
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
-  <!-- JQuery -->
-  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-  <!-- Bootstrap tooltips -->
-  <script type="text/javascript"
-    src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.4/umd/popper.min.js"></script>
-  <!-- Bootstrap core JavaScript -->
-  <script type="text/javascript"
-    src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/js/bootstrap.min.js"></script>
-  <!-- MDB core JavaScript -->
-  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.19.1/js/mdb.min.js"></script>
-</body>
-
-</html>
+  <div class="col-lg-5">
+    <div class="card h-100" aria-live="polite">
+      <div class="card-header py-3"><h2 class="h6 mb-0 fw-semibold">Results{% if filename %} <span class="text-secondary fw-normal">· {{ filename }}</span>{% endif %}</h2></div>
+      <div class="card-body p-4">
+        {% if error %}
+        <div class="alert alert-danger mb-0" role="alert">{{ error }}</div>
+        {% elif checked %}
+        {% include 'pc/_gauge.html' with value=percent label='matched' %}
+        <h3 class="h6 fw-semibold mt-4 mb-2">Matching sources</h3>
+        {% if sources %}
+        <ul class="list-group list-group-flush source-list">
+          {% for link, share in sources %}
+          <li class="list-group-item px-0">
+            <a href="{{ link }}" target="_blank" rel="noopener noreferrer nofollow">{{ link }}</a>
+            <span class="badge rounded-pill text-bg-light border">{{ share }}%</span>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-secondary mb-0">No significant matches were found online.</p>
+        {% endif %}
+        {% else %}
+        <div class="placeholder-state">
+          <i class="bi bi-clipboard-data" aria-hidden="true"></i>
+          Paste some text or upload a document, then run the search to see the match percentage and sources here.
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
