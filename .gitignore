@@ -13,3 +13,9 @@ env/
 # editor / OS
 .ipynb_checkpoints/
 .DS_Store
+.env.*
+!.env.example
+
+# Django
+db.sqlite3
+staticfiles/
