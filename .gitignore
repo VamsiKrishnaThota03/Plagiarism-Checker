@@ -1,0 +1,15 @@
+# Python bytecode / caches
+__pycache__/
+*.py[cod]
+
+# virtual environments
+venv/
+.venv/
+env/
+
+# environment / secrets
+.env
+
+# editor / OS
+.ipynb_checkpoints/
+.DS_Store
