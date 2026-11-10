@@ -1,7 +1,7 @@
 Django==5.2.19
 nltk==3.10.4
 python-docx==1.2.0
-pypdf==6.21.4
+pypdf==7.0.0
 requests==2.34.2
 python-dotenv==1.2.4
 whitenoise==6.9.0
