@@ -9,8 +9,8 @@ A Django web app that estimates plagiarism. It compares text or documents agains
 ![NLTK](https://img.shields.io/badge/NLP-NLTK-154F5B)
 ![Google Custom Search](https://img.shields.io/badge/API-Google_Custom_Search-4285F4?logo=google&logoColor=white)
 
-[![CI](https://github.com/VamsiKrishnaThota03/Plagiarism-Checker/actions/workflows/ci.yml/badge.svg)](https://github.com/VamsiKrishnaThota03/Plagiarism-Checker/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/VamsiKrishnaThota03/Plagiarism-Checker/actions/workflows/codeql.yml/badge.svg)](https://github.com/VamsiKrishnaThota03/Plagiarism-Checker/actions/workflows/codeql.yml)
+[![CI](https://github.com/VamsiKrishnaThota03/plagiarism-checker/actions/workflows/ci.yml/badge.svg)](https://github.com/VamsiKrishnaThota03/plagiarism-checker/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/VamsiKrishnaThota03/plagiarism-checker/actions/workflows/codeql.yml/badge.svg)](https://github.com/VamsiKrishnaThota03/plagiarism-checker/actions/workflows/codeql.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ## Overview
@@ -79,7 +79,7 @@ Plagiarism-Checker/
 ### Install
 
 ```bash
-git clone https://github.com/VamsiKrishnaThota03/Plagiarism-Checker.git
+git clone https://github.com/VamsiKrishnaThota03/plagiarism-checker.git
 cd Plagiarism-Checker
 python -m venv venv
 source venv/bin/activate          # Windows: venv\Scripts\activate
